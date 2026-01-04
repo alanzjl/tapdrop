@@ -379,6 +379,39 @@ class ReceiveTextDialog extends Dialog {
     }
 }
 
+class RoomDialog extends Dialog {
+    constructor() {
+        super('roomDialog');
+        this.$input = this.$el.querySelector('#roomInput');
+        this.$form = this.$el.querySelector('form');
+        this.$global = this.$el.querySelector('#roomGlobal');
+        this.$form.addEventListener('submit', e => this._onSubmit(e));
+        this.$global.addEventListener('click', e => this._useGlobal(e));
+        Events.on('room-needed', _ => this.show());
+    }
+
+    _onSubmit(e) {
+        e.preventDefault();
+        const room = this.$input.value.trim();
+        if (!room) {
+            this.$input.focus();
+            return;
+        }
+        this._selectRoom(room);
+    }
+
+    _useGlobal(e) {
+        e.preventDefault();
+        this._selectRoom('');
+    }
+
+    _selectRoom(room) {
+        this.$input.value = '';
+        this.hide();
+        Events.fire('room-selected', room);
+    }
+}
+
 class Toast extends Dialog {
     constructor() {
         super('toast');
@@ -520,14 +553,19 @@ class WebShareTargetUI {
 
         if (!shareTargetText) return;
         window.shareTargetText = shareTargetText;
-        history.pushState({}, 'URL Rewrite', '/');
+        parsedUrl.searchParams.delete('title');
+        parsedUrl.searchParams.delete('text');
+        parsedUrl.searchParams.delete('url');
+        const nextUrl = parsedUrl.pathname + (parsedUrl.search ? parsedUrl.search : '');
+        history.pushState({}, 'URL Rewrite', nextUrl);
         console.log('Shared Target Text:', '"' + shareTargetText + '"');
     }
 }
 
 
-class Snapdrop {
+class Tapdrop {
     constructor() {
+        const roomDialog = new RoomDialog();
         const server = new ServerConnection();
         const peers = new PeersManager(server);
         const peersUI = new PeersUI();
@@ -543,7 +581,7 @@ class Snapdrop {
     }
 }
 
-const snapdrop = new Snapdrop();
+const tapdrop = new Tapdrop();
 
 
 

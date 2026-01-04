@@ -1,6 +1,49 @@
 window.URL = window.URL || window.webkitURL;
 window.isRtcSupported = !!(window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection);
 
+let cachedRoom;
+let roomPromise;
+
+function roomFromUrl() {
+    const room = new URLSearchParams(location.search).get('room');
+    if (!room || !room.trim()) return null;
+    return room.trim();
+}
+
+function updateRoomInUrl(room) {
+    const url = new URL(window.location);
+    if (room) {
+        url.searchParams.set('room', room);
+    } else {
+        url.searchParams.delete('room');
+    }
+    const nextUrl = url.pathname + (url.search ? url.search : '');
+    history.replaceState({}, '', nextUrl);
+}
+
+function ensureRoom() {
+    if (cachedRoom !== undefined) return Promise.resolve(cachedRoom);
+    const existing = roomFromUrl();
+    if (existing !== null) {
+        cachedRoom = existing;
+        return Promise.resolve(cachedRoom);
+    }
+    if (roomPromise) return roomPromise;
+    roomPromise = new Promise(resolve => {
+        const handler = e => {
+            Events.off('room-selected', handler);
+            const selected = (e.detail || '').toString().trim();
+            cachedRoom = selected;
+            roomPromise = null;
+            updateRoomInUrl(selected);
+            resolve(cachedRoom);
+        };
+        Events.on('room-selected', handler);
+        Events.fire('room-needed');
+    });
+    return roomPromise;
+}
+
 class ServerConnection {
 
     constructor() {
@@ -13,13 +56,16 @@ class ServerConnection {
     _connect() {
         clearTimeout(this._reconnectTimer);
         if (this._isConnected() || this._isConnecting()) return;
-        const ws = new WebSocket(this._endpoint());
-        ws.binaryType = 'arraybuffer';
-        ws.onopen = e => console.log('WS: server connected');
-        ws.onmessage = e => this._onMessage(e.data);
-        ws.onclose = e => this._onDisconnect();
-        ws.onerror = e => console.error(e);
-        this._socket = ws;
+        ensureRoom().then(room => {
+            if (this._isConnected() || this._isConnecting()) return;
+            const ws = new WebSocket(this._endpoint(room));
+            ws.binaryType = 'arraybuffer';
+            ws.onopen = e => console.log('WS: server connected');
+            ws.onmessage = e => this._onMessage(e.data);
+            ws.onclose = e => this._onDisconnect();
+            ws.onerror = e => console.error(e);
+            this._socket = ws;
+        });
     }
 
     _onMessage(msg) {
@@ -54,11 +100,14 @@ class ServerConnection {
         this._socket.send(JSON.stringify(message));
     }
 
-    _endpoint() {
+    _endpoint(room) {
         // hack to detect if deployment or development environment
         const protocol = location.protocol.startsWith('https') ? 'wss' : 'ws';
         const webrtc = window.isRtcSupported ? '/webrtc' : '/fallback';
-        const url = protocol + '://' + location.host + location.pathname + 'server' + webrtc;
+        let url = protocol + '://' + location.host + location.pathname + 'server' + webrtc;
+        if (room) {
+            url += '?room=' + encodeURIComponent(room);
+        }
         return url;
     }
 

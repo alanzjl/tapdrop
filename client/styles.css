@@ -2,7 +2,7 @@
 
 :root {
     --icon-size: 24px;
-    --primary-color: #4285f4;
+    --primary-color: #28b8a0;
     --peer-width: 120px;
     --text-color: #333;
     --bg-color: #fafafa;
@@ -500,6 +500,20 @@ button::-moz-focus-inner {
     max-height: 300px;
 }
 
+.text-input {
+    box-sizing: border-box;
+    border: none;
+    outline: none;
+    padding: 12px 16px;
+    border-radius: 16px;
+    margin: 12px 0 4px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #f1f3f4;
+    display: block;
+    width: 100%;
+}
+
 
 /* Info Animation */
 
@@ -730,4 +744,3 @@ x-dialog x-paper {
         overflow: hidden;
     }
 }
-
