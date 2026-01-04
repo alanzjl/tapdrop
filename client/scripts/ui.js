@@ -384,9 +384,7 @@ class RoomDialog extends Dialog {
         super('roomDialog');
         this.$input = this.$el.querySelector('#roomInput');
         this.$form = this.$el.querySelector('form');
-        this.$global = this.$el.querySelector('#roomGlobal');
         this.$form.addEventListener('submit', e => this._onSubmit(e));
-        this.$global.addEventListener('click', e => this._useGlobal(e));
         Events.on('room-needed', _ => this.show());
     }
 
@@ -398,11 +396,6 @@ class RoomDialog extends Dialog {
             return;
         }
         this._selectRoom(room);
-    }
-
-    _useGlobal(e) {
-        e.preventDefault();
-        this._selectRoom('');
     }
 
     _selectRoom(room) {

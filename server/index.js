@@ -28,6 +28,10 @@ class TapdropServer {
     }
 
     _onConnection(peer) {
+        if (!peer.room) {
+            peer.socket.close();
+            return;
+        }
         this._joinRoom(peer);
         peer.socket.on('message', message => this._onMessage(peer, message));
         peer.socket.on('error', console.error);
@@ -204,7 +208,7 @@ class Peer {
     }
 
     _setRoom(request) {
-        const fallback = 'global';
+        const fallback = '';
         const baseUrl = `http://${request.headers.host || 'localhost'}`;
         let room = fallback;
         try {
@@ -216,7 +220,7 @@ class Peer {
         } catch (e) {
             room = fallback;
         }
-        this.room = room;
+        this.room = room || null;
     }
 
     toString() {
