@@ -215,7 +215,7 @@ class Peer {
             const url = new URL(request.url, baseUrl);
             const queryRoom = url.searchParams.get('room');
             if (queryRoom && queryRoom.trim()) {
-                room = queryRoom.trim().slice(0, 64);
+                room = queryRoom.trim().toLowerCase().slice(0, 64);
             }
         } catch (e) {
             room = fallback;

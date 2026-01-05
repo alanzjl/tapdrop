@@ -1,6 +1,6 @@
 {
-    "name": "Tapdrop",
-    "short_name": "Tapdrop",
+    "name": "TapDrop",
+    "short_name": "TapDrop",
     "icons": [{
         "src": "images/android-chrome-192x192.png",
         "sizes": "192x192",

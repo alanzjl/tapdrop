@@ -318,6 +318,10 @@ footer .font-body2 {
     color: var(--primary-color);
 }
 
+#roomDisplay {
+    margin-top: 4px;
+}
+
 @media (min-height: 800px) {
     footer {
         margin-bottom: 16px;

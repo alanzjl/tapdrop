@@ -13,6 +13,16 @@ Events.on('display-name', e => {
     $displayName.title = me.deviceName;
 });
 
+Events.on('room-changed', e => {
+    const room = (e.detail || '').toString().trim();
+    const $roomDisplay = $('roomDisplay');
+    if (!room) {
+        $roomDisplay.textContent = '';
+        return;
+    }
+    $roomDisplay.textContent = 'Room: ' + room;
+});
+
 class PeersUI {
 
     constructor() {

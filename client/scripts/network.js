@@ -7,13 +7,13 @@ let roomPromise;
 function roomFromUrl() {
     const room = new URLSearchParams(location.search).get('room');
     if (!room || !room.trim()) return null;
-    return room.trim();
+    return room.trim().toLowerCase();
 }
 
 function updateRoomInUrl(room) {
     const url = new URL(window.location);
     if (room) {
-        url.searchParams.set('room', room);
+        url.searchParams.set('room', room.toLowerCase());
     } else {
         url.searchParams.delete('room');
     }
@@ -26,16 +26,18 @@ function ensureRoom() {
     const existing = roomFromUrl();
     if (existing !== null) {
         cachedRoom = existing;
+        Events.fire('room-changed', cachedRoom);
         return Promise.resolve(cachedRoom);
     }
     if (roomPromise) return roomPromise;
     roomPromise = new Promise(resolve => {
         const handler = e => {
             Events.off('room-selected', handler);
-            const selected = (e.detail || '').toString().trim();
+            const selected = (e.detail || '').toString().trim().toLowerCase();
             cachedRoom = selected;
             roomPromise = null;
             updateRoomInUrl(selected);
+            Events.fire('room-changed', cachedRoom);
             resolve(cachedRoom);
         };
         Events.on('room-selected', handler);
