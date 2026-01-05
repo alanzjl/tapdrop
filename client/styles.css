@@ -31,6 +31,14 @@ body {
     overflow-y: hidden;
 }
 
+body.legal-body {
+    display: block;
+    overflow-y: auto;
+    align-items: stretch;
+    justify-content: flex-start;
+    background: var(--bg-color);
+}
+
 .row-reverse {
     display: flex;
     flex-direction: row-reverse;
@@ -320,6 +328,15 @@ footer .font-body2 {
 
 #roomDisplay {
     margin-top: 4px;
+}
+
+.legal-link {
+    margin-top: 8px;
+    text-decoration: none;
+}
+
+.legal-link:hover {
+    text-decoration: underline;
 }
 
 @media (min-height: 800px) {
