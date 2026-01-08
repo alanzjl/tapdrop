@@ -256,11 +256,13 @@ class Peer {
     _onFileReceived(proxyFile) {
         Events.fire('file-received', proxyFile);
         this.sendJSON({ type: 'transfer-complete' });
+        this._digester = null;
     }
 
     _onTransferCompleted() {
         this._onDownloadProgress(1);
         this._reader = null;
+        this._chunker = null;
         this._busy = false;
         this._dequeueFile();
         Events.fire('notify-user', 'File transfer completed.');
@@ -401,6 +403,23 @@ class RTCPeer extends Peer {
         this._connect(this._peerId, this._isCaller);
     }
 
+    close() {
+        if (this._channel) {
+            this._channel.onmessage = null;
+            this._channel.onclose = null;
+            this._channel.close();
+        }
+        if (this._conn) {
+            this._conn.onicecandidate = null;
+            this._conn.onconnectionstatechange = null;
+            this._conn.oniceconnectionstatechange = null;
+            this._conn.ondatachannel = null;
+            this._conn.close();
+        }
+        this._channel = null;
+        this._conn = null;
+    }
+
     _isConnected() {
         return this._channel && this._channel.readyState === 'open';
     }
@@ -458,8 +477,8 @@ class PeersManager {
     _onPeerLeft(peerId) {
         const peer = this.peers[peerId];
         delete this.peers[peerId];
-        if (!peer || !peer._peer) return;
-        peer._peer.close();
+        if (!peer || !peer.close) return;
+        peer.close();
     }
 
 }
@@ -468,6 +487,10 @@ class WSPeer {
     _send(message) {
         message.to = this._peerId;
         this._server.send(message);
+    }
+
+    close() {
+        return;
     }
 }
 

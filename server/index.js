@@ -23,6 +23,7 @@ class TapdropServer {
         this._wss.on('headers', (headers, response) => this._onHeaders(headers, response));
 
         this._rooms = {};
+        this._cleanupTimer = setInterval(() => this._cleanupStalePeers(), 60000);
 
         console.log('Tapdrop is running on port', port);
     }
@@ -34,7 +35,11 @@ class TapdropServer {
         }
         this._joinRoom(peer);
         peer.socket.on('message', message => this._onMessage(peer, message));
-        peer.socket.on('error', console.error);
+        peer.socket.on('close', () => this._leaveRoom(peer));
+        peer.socket.on('error', err => {
+            console.error(err);
+            this._leaveRoom(peer);
+        });
         this._keepAlive(peer);
 
         // send displayName
@@ -158,6 +163,19 @@ class TapdropServer {
     _cancelKeepAlive(peer) {
         if (peer && peer.timerId) {
             clearTimeout(peer.timerId);
+            peer.timerId = 0;
+        }
+    }
+
+    _cleanupStalePeers() {
+        const timeout = 30000;
+        for (const roomId in this._rooms) {
+            const room = this._rooms[roomId];
+            for (const peerId in room) {
+                const peer = room[peerId];
+                if (!peer || (Date.now() - peer.lastBeat) <= 2 * timeout) continue;
+                this._leaveRoom(peer);
+            }
         }
     }
 }
