@@ -1,12 +1,13 @@
 version: "3"
 services:
   node:
-    image: "node:lts-alpine"
-    user: "node"
-    working_dir: /home/node/app
-    volumes:
-      - ./server/:/home/node/app
-    command: ash -c "npm i && node index.js"
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    image: "snapdrop-server"
+    mem_limit: 256m
+    memswap_limit: 512m
+    restart: unless-stopped
     ports:
       - "3000:3000"
   nginx:

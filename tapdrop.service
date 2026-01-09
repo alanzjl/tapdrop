@@ -1,0 +1,17 @@
+[Unit]
+Description=TapDrop
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/ubuntu/tapdrop
+ExecStart=/usr/bin/docker compose up --build --remove-orphans
+ExecStop=/usr/bin/docker compose down
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target
