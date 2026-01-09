@@ -531,6 +531,10 @@ button::-moz-focus-inner {
     font-size: 14px;
     font-family: inherit;
     background: #f1f3f4;
+    color: var(--text-color);
+    caret-color: var(--text-color);
+    -webkit-text-fill-color: var(--text-color);
+    color-scheme: light;
     display: block;
     width: 100%;
 }
